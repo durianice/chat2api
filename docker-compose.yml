@@ -2,7 +2,7 @@ version: '3'
 
 services:
   chat2api:
-    image: lanqian528/chat2api:latest
+    image: durianice/chat2api:latest
     container_name: chat2api
     restart: unless-stopped
     ports:
@@ -11,6 +11,13 @@ services:
       - ./data:/app/data # 挂载一些需要保存的数据
     environment:
       - ARKOSE_TOKEN_URL=http://arkose:5006/token
+      - PROXY_URL=$PROXY_URL
+      # - CAPSOLVER_API_KEY=$CAPSOLVER_API_KEY
+      # - POW_DIFFICULTY=$POW_DIFFICULTY
+      # - RETRY_TIMES=$RETRY_TIMES
+      # - HISTORY_DISABLED=$HISTORY_DISABLED
+      # - CHATGPT_BASE_URL=$CHATGPT_BASE_URL
+      # - API_PREFIX=$API_PREFIX
 
   arkose:
     image: lanqian528/funcaptcha_solver:latest
