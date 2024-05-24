@@ -1,14 +1,14 @@
 name: Build Docker Image
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
-      - 'docker-compose.yml'
-      - 'docs/**'
-      - '.github/workflows/build_docker.yml'
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - 'README.md'
+  #     - 'docker-compose.yml'
+  #     - 'docs/**'
+  #     - '.github/workflows/build_docker.yml'
   workflow_dispatch:
 
 jobs:
