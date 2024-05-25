@@ -25,3 +25,5 @@ services:
     restart: unless-stopped
     ports:
       - '5006:5006'
+    environment:
+      - TZ=Asia/Shanghai # 设置时区
