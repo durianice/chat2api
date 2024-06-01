@@ -264,18 +264,20 @@ class ChatService:
         logger.info(f"Model mapping: {self.origin_model} -> {self.req_model}")
         self.chat_request = {
             "action": "next",
-            "messages": chat_messages,
-            "parent_message_id": self.parent_message_id if self.parent_message_id else f"{uuid.uuid4()}",
-            "model": self.req_model,
-            "timezone_offset_min": -480,
-            "suggestions": [],
-            "history_and_training_disabled": self.history_disabled,
             "conversation_mode": conversation_mode,
+            "force_nulligen": False,
             "force_paragen": False,
             "force_paragen_model_slug": "",
-            "force_nulligen": False,
             "force_rate_limit": False,
             "force_ues_sse": True,
+            "history_and_training_disabled": self.history_disabled,
+            "messages": chat_messages,
+            "model": self.req_model,
+            "parent_message_id": self.parent_message_id if self.parent_message_id else f"{uuid.uuid4()}",
+            "reset_rate_limits": False,
+            "suggestions": [],
+            "timezone_offset_min": -480,
+            "variant_purpose": "comparison_implicit",
             "websocket_request_id": f"{uuid.uuid4()}"
         }
         if self.conversation_id:
@@ -291,8 +293,9 @@ class ChatService:
                         self.wss_url = await self.get_wss_url()
                         await set_wss(self.access_token, self.wss_url)
                     self.ws = await websockets.connect(self.wss_url, ping_interval=None, subprotocols=subprotocols)
-            except websockets.exceptions.InvalidStatusCode as e:
-                raise HTTPException(status_code=e.status_code, detail=str(e))
+            except Exception as e:
+                logger.error(f"Failed to connect to wss: {str(e)}", )
+                raise HTTPException(status_code=502, detail="Failed to connect to wss")
             url = f'{self.base_url}/conversation'
             stream = self.data.get("stream", False)
             r = await self.s.post_stream(url, headers=self.chat_headers, json=self.chat_request, timeout=10,
@@ -326,7 +329,11 @@ class ChatService:
                 await set_wss(self.access_token, self.wss_url)
                 logger.info(f"next wss_url: {self.wss_url}")
                 if not self.ws:
-                    self.ws = await websockets.connect(self.wss_url, ping_interval=None, subprotocols=subprotocols)
+                    try:
+                        self.ws = await websockets.connect(self.wss_url, ping_interval=None, subprotocols=subprotocols)
+                    except Exception as e:
+                        logger.error(f"Failed to connect to wss: {str(e)}", )
+                        raise HTTPException(status_code=502, detail="Failed to connect to wss")
                 wss_r = wss_stream_response(self.ws, conversation_id)
                 try:
                     if stream and isinstance(wss_r, types.AsyncGeneratorType):
