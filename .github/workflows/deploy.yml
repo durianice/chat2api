@@ -73,5 +73,5 @@ jobs:
           docker compose --profile no-proxy down
           docker compose --profile no-proxy pull
           docker compose --profile no-proxy up -d
-          # docker image prune -f
+          docker image prune -f
           # rm -r $workdir
